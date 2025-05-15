@@ -1,7 +1,52 @@
-import { helloQuery } from "@/graphql/resolvers/queries/hello-query";
+import getAllTasks from '@/graphql/resolvers/queries/getAllTasks';
+import getFinishedTasksLists from '@/graphql/resolvers/queries/getFinishedTasksLists';
+import { helloQuery } from '@/graphql/resolvers/queries/hello-queries';
+import { TaskModel } from '@/mongoose/TaskModel';
+import mongoose from 'mongoose';
 
-describe("Hello Query", () => {
-  it("Should call hello query", () => {
-    expect(helloQuery()).toBeDefined();
+describe('Query tests', () => {
+  beforeAll(async () => {
+  await mongoose.connect(process.env.MONGODB_URI || '');
+  });
+
+  afterAll(async () => {
+    await mongoose.disconnect();
+  });
+
+  afterEach(async () => {
+    await TaskModel.deleteMany({});
+  });
+
+  test('helloQuery returns greeting string', () => {
+    expect(helloQuery()).toBe('This is hello Query');
+  });
+
+  test('getAllTasks returns active tasks', async () => {
+    // Setup: add some tasks
+    await TaskModel.create([
+      { title: 'Active Task 1', isDeleted: false },
+      { title: 'Deleted Task', isDeleted: true },
+    ]);
+
+    const result = await getAllTasks();
+
+    expect(Array.isArray(result)).toBe(true);
+    expect(result.every(task => task.isDeleted === false)).toBe(true);
+    expect(result.some(task => task.title === 'Active Task 1')).toBe(true);
+  });
+
+  test('getFinishedTasksLists returns deleted tasks', async () => {
+    // Setup: add some tasks
+    await TaskModel.create([
+      { title: 'Active Task', isDeleted: false },
+      { title: 'Deleted Task 1', isDeleted: true },
+      { title: 'Deleted Task 2', isDeleted: true },
+    ]);
+
+    const result = await getFinishedTasksLists();
+
+    expect(Array.isArray(result)).toBe(true);
+    expect(result.every(task => task.isDeleted === true)).toBe(true);
+    expect(result.some(task => task.title === 'Deleted Task 1')).toBe(true);
   });
 });

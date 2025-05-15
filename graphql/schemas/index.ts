@@ -1,11 +1,28 @@
-import { gql } from "graphql-tag";
+// graphql/schemas/index.ts
+import { gql } from 'apollo-server-express';
 
-export const typeDefs = gql`
+const typeDefs = gql`
+  type Task {
+    id: ID!
+    title: String!
+    description: String
+    isDeleted: Boolean
+  }
+
+  input TaskInput {
+    title: String!
+    description: String
+  }
+
   type Query {
-    helloQuery: String
+    getAllTasks: [Task!]!
+    getFinishedTasksLists: [Task!]!
   }
 
   type Mutation {
-    sayHello(name: String!): String
+    addTask(input: TaskInput!): Task!
+    updateTask(id: ID!, input: TaskInput!): Task!
   }
 `;
+
+export default typeDefs;
