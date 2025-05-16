@@ -1,4 +1,5 @@
-import { TaskModel } from "../../../mongoose/TaskModel";
+import mongoose from 'mongoose';
+import { TaskModel } from '../../../mongoose/TaskModel';
 
 interface TaskInput {
   title?: string;
@@ -6,15 +7,18 @@ interface TaskInput {
 }
 
 export const updateTask = async (_: any, { id, input }: { id: string; input: TaskInput }) => {
-  const updatedTask = await TaskModel.findByIdAndUpdate(
-    id,
-    { $set: input },
-    { new: true }
-  );
-
-  if (!updatedTask) {
-    throw new Error(`Task with id ${id} not found`);
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new Error(`Task with id not found`);
   }
 
-  return updatedTask;
+  const task = await TaskModel.findById(id);
+  if (!task) {
+    throw new Error(`Task with id not found`);
+  }
+
+  if (input.title !== undefined) task.title = input.title;
+  if (input.description !== undefined) task.description = input.description;
+
+  await task.save();
+  return task;
 };

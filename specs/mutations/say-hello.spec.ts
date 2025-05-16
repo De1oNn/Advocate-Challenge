@@ -30,7 +30,7 @@ describe('Mutation tests', () => {
     expect(result).toBe('This is hello Mutation World');
   });
 
-  test('addTask creates a task', async () => {
+  test('addTask creates a task', async () => {``
     const input = { title: 'Test Task', description: 'Test description' };
     const newTask = await addTask({}, { input });
 
@@ -52,7 +52,7 @@ describe('Mutation tests', () => {
 
   test('updateTask throws error for invalid id', async () => {
     await expect(
-      updateTask({}, { id: 'invalidid123456', input: { title: 'Will fail' } })
-    ).rejects.toThrow('Task with id invalidid123456 not found');
+      updateTask({}, { id: '', input: { title: 'Will fail' } })
+    ).rejects.toThrow(`Task with id not found`);
   });
 });

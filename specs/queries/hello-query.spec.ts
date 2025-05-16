@@ -21,32 +21,36 @@ describe('Query tests', () => {
     expect(helloQuery()).toBe('This is hello Query');
   });
 
-  test('getAllTasks returns active tasks', async () => {
-    // Setup: add some tasks
-    await TaskModel.create([
-      { title: 'Active Task 1', isDeleted: false },
-      { title: 'Deleted Task', isDeleted: true },
-    ]);
+test('getAllTasks returns active tasks', async () => {
+  await TaskModel.create([
+    { title: 'Active Task 1', isDeleted: false },
+    { title: 'Deleted Task', isDeleted: true },
+  ]);
 
-    const result = await getAllTasks();
+  const result = await getAllTasks();
 
-    expect(Array.isArray(result)).toBe(true);
-    expect(result.every(task => task.isDeleted === false)).toBe(true);
-    expect(result.some(task => task.title === 'Active Task 1')).toBe(true);
-  });
+  expect(Array.isArray(result)).toBe(true);
+  expect(result.every(task => task.isDeleted === false)).toBe(true);
+  expect(result.map(t => t.title)).toContain('Active Task 1');
+});
+
 
   test('getFinishedTasksLists returns deleted tasks', async () => {
-    // Setup: add some tasks
-    await TaskModel.create([
+    await TaskModel.insertMany([
       { title: 'Active Task', isDeleted: false },
       { title: 'Deleted Task 1', isDeleted: true },
       { title: 'Deleted Task 2', isDeleted: true },
     ]);
 
+    const count = await TaskModel.countDocuments({});
+    expect(count).toBe(3);
+
     const result = await getFinishedTasksLists();
 
     expect(Array.isArray(result)).toBe(true);
     expect(result.every(task => task.isDeleted === true)).toBe(true);
-    expect(result.some(task => task.title === 'Deleted Task 1')).toBe(true);
+    expect(result.map(t => t.title)).toContain('Deleted Task 1');
+    expect(result.map(t => t.title)).toContain('Deleted Task 2');
+    expect(result.map(t => t.title)).not.toContain('Active Task');
   });
 });
